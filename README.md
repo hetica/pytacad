@@ -1,16 +1,16 @@
 # Pytacad
 
 Ce script à été créé pour retrouver **rapidement** des informations sur un ou plusieurs étudiants du site netacad.com.  
-Cisco ne fournit pas de champs de recherche, si bien qu'il est plus que fastidieux de retrouver un stagiaires dans la base.  
-Et il est encore plus compliqué de retrouver ses classes.
+Cisco ne fournit pas de champs de recherche, si bien qu'il est plus que fastidieux de retrouver un stagiaire dans la base.  
+Et il est encore plus compliqué de retrouver les classes sur lesquelles il est inscrit.
 
 Pytacad est divisé en 2 parties : 
 
 ## pytacad-server  
 
-Son rôle est d'aller parser toutes les classes d'une académie Cisco sur le site netacad.com, et d'en extraire des informations :
+Son rôle est de parser toutes les classes d'une académie Cisco sur le site netacad.com, et d'en extraire des informations :
 
-* chaque classe est sotckée dans un fichier texte
+* chaque classe est stockée dans un fichier texte
 * un fichier contient l'ensemble des stagiaires, et les classes auxquels ils appartiennent  
 
 On pourra exécuter le serveur une ou plusieurs fois par jour à l'aide de la crontab
