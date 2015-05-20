@@ -1,0 +1,32 @@
+12/05/2015
+Plus de mises à jour depuis le site 
+CAUSE
+ Modifications de la page d'accueil de netacad.com dont les identifiants de formulaires pour login/mdp
+	-> le programme plante
+ Modification de la page "classe", notamment la partie "stagiaires"
+	-> aucun stagiaires n'est récupéré par l'appli
+RESOLUTION
+ Modification du code (passage à la version 0.4)
+_______________________________________________________________________________________________
+03/02/2015
+Plus de mises à jour depuis le site
+CAUSE
+ Modification de l'infrastructure de l'ENI, changement de passerelle
+ empêchant le serveur de joindre le site netacad.com
+RESOLUTION
+ Modification des paramètres de passerelle et des DNS
+_______________________________________________________________________________________________
+02/05/2014
+Plus de mises à jour depuis le site
+CAUSE
+ Suite à la mise à jour de Debian, le module "bs4" fait planter le programme.
+RESOLUTION
+ Le module "bs4" est remplacé par "BeautifulSoup" (passage à la versions 0.3)
+_______________________________________________________________________________________________
+10/10/2013
+Plus de mises à jour depuis le site
+CAUSE
+ Le site netacad.com à eu des modifications, l'extraction d'informations est devenue impossible.
+RESOLUTION
+ Modification du code de pytacad-server (passage à la version 0.1.1)
+_______________________________________________________________________________________________

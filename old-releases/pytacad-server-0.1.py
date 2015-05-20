@@ -1,0 +1,372 @@
+#!/usr/bin/python
+# *-* coding:utf-8 *-*
+
+"""
+Docs diverses
+	http://stockrt.github.io/p/handling-html-forms-with-python-mechanize-and-BeautifulSoup/
+	http://stockrt.github.io/p/emulating-a-browser-in-python-with-mechanize/
+	http://domeu.blogspot.fr/2011/03/beautifulsoup-comment-extraire-ou.html
+Docs de mechanize
+	http://www.pythonforbeginners.com/python-on-the-web/browsing-in-python-with-mechanize/
+	PB de select
+		http://stackoverflow.com/questions/8590172/setting-a-select-control-in-a-form-with-mechanize-using-python
+Doc de BeautifulSoup : 
+	http://www.daniweb.com/software-development/python/threads/405662/beautifulsoup-to-extract-multiple-td-tags-within-tr
+	http://www.crummy.com/software/BeautifulSoup/bs3/documentation.html
+Suivi de liens :
+	http://www.pythonforbeginners.com/cheatsheet/python-mechanize-cheat-sheet/
+	http://www.pythonforbeginners.com/python-on-the-web/browsing-in-python-with-mechanize/
+HTTP Error 406 Not acceptable
+	http://www.checkupdown.com/status/E406.html
+"""
+__appname__ = 'pytacad'
+__version__ = "0.1"
+__author__ = "Benoit Guibert <benoit.guibert@free.fr>"
+__licence__ = "LGPL"
+
+
+import os
+import mechanize, urllib
+import cookielib
+from bs4 import BeautifulSoup
+
+user = " benoit.guibert"
+mdp = "MandraKe44"
+
+def manageFiles():
+	"""
+	"""
+	cwd = '/var/local/netacad/'
+	dirClasses = cwd + 'classes'
+	if not os.path.isdir(cwd):
+		os.mkdir(cwd)
+	if not os.path.isdir(dirClasses):
+		os.mkdir(cwd + 'classes')
+	os.chdir(cwd)
+	
+def createInstance():
+	"""
+	Se connecter au site Netacad de Cisco
+	"""
+	
+	## CREER UNE INSTANCE DE BROWSER
+
+	# Browser
+	br = mechanize.Browser()
+
+	# Cookie Jar
+	cj = cookielib.LWPCookieJar()
+	br.set_cookiejar(cj)
+
+	# Browser options
+	br.set_handle_equiv(True)
+	# br.set_handle_gzip(True)
+	br.set_handle_redirect(True)
+	br.set_handle_referer(True)
+	br.set_handle_robots(False)
+
+	# Follows refresh 0 but not hangs on refresh > 0
+	br.set_handle_refresh(mechanize._http.HTTPRefreshProcessor(), max_time=1)
+
+	# Want debugging messages?
+	#br.set_debug_http(True)
+	#br.set_debug_redirects(True)
+	#br.set_debug_responses(True)
+
+	# User-Agent (this is cheating, ok?)
+	br.addheaders = [('User-agent', 'Mozilla/5.0 (X11; U; Linux i686; fr-FR; rv:1.9.0.1) Gecko/2008071615 Fedora/3.0.1-1.fc9 Firefox/3.0.1')]
+
+	return br
+
+	## L'INSTANCE CRÉÉE, IL EST MAINTENANT POSSIBLE D'OUVRIR UNE PAGE OU D'INTERRAGIR
+
+def connect2netacad(br):
+
+	## The site we will navigate into, handling it's session
+	r = br.open('https://www.netacad.com')
+	# html = r.read()
+
+	## Afficher les formulaires
+	#for f in br.forms():
+	#	print f
+	
+	## show the source
+	# print r.info()
+	## or
+	# print br.response().info()
+
+	## Show the html title
+	print br.title()
+
+	## Select the first (index zero) form
+	br.select_form(nr=0)
+
+	## User credentials
+	br.form['_58_INSTANCE_4433_login'] = user
+	br.form['_58_INSTANCE_4433_password'] = mdp
+
+	## Login
+	br.submit()
+
+	## L'AUTHENTIFICATION ET LA CONNEXION SONT MAINTENANT RÉALISÉÉS
+	## Vérifier si l'in est bien sur la page d'accueil du compte
+	# print br.response().read()
+	# print br.response().info()
+	# print br.response().code
+	print br.title()
+	# response
+
+	return br
+
+def getListeClasses(br):
+	"""
+	Obtenir les Informations concernant toutes les classes
+	- Nom de la classe
+	- ID de la classe (un nombre)
+	- URL (pour s'y connecter)
+	- le nombre de cours actuels
+	"""
+	
+	html = br.response().read()
+	soup = BeautifulSoup(html)
+	# print soup
+	listeClasses = []
+	for a in soup.findAll('ul', attrs={ 'class' : "course-list" } ):
+		for b in a.findAll('a', title=True, href=True):
+			nomCours = b['title']
+			idCours = b['href'].split('/')[-1]
+			# urlCours =  "https://www.netacad.com" + b['href']
+			urlCours = b['href'].split('=')[1]
+			urlCours = 'https://' + urlCours.split('/')[2] + r'/' + b['href'].split('=/')[-1]
+			listeClasses = listeClasses + [[nomCours , idCours , urlCours ]]
+	
+	for a in listeClasses:
+		print a
+	
+	return listeClasses		
+
+def getInfosClasse(br):
+	"""
+	Récuperer les infos d'une classe : 
+	- nom de la classe
+	- type de cours (CCNA2, CCNA3)
+	- date de début
+	- date de fin
+	- liste des stagiaires de la classe :
+		nom;prénom;login;adresse mail;dernière connexion
+	A étudier :
+		réinitialiser le mot de passe d'un stagiaire
+		demander une attestation
+		demander une lettre
+	"""
+	urls = []
+	for link in br.links():
+		## Lister les URLs des pages à ouvrir
+		if "courseId=" in link.url:
+		#if "courseId=40935" in link.url:
+			## Ajouter le delta pour afficher 50 stagiaires par page
+			delta = "&_omni_WAR_omniportlet_delta=50"
+			link.url = link.url + delta
+			urls.append(link.url)
+		
+	for a in urls:
+		## Ouvrir la page de gestion de la classe
+		resp = br.open(a)
+		## Récupérer le contenu de la page
+		content = resp.get_data()
+		## Soup permet d'organiser les recherches par balise
+		soup = BeautifulSoup(content)
+		#print(content)
+		#print(soup)
+		### RECUPERER LA PARTIE INTERRESSANTE DE LA PAGE
+		for cadre in soup.findAll('div', attrs={ 'class': "portlet-borderless-container" }):
+			# print cadre.get_text().encode('utf-8')
+			nb = 0
+			for table in cadre.find_all('table'):
+				#for td in table.find('td'):
+				#print table
+				### RECUPERER LES INFOS GENERALES
+				if nb == 0:
+					nb_infos = 0
+					infos = []
+					for a in table.find_all('td'):
+						if nb_infos == 0:
+							infos.append(a.get_text().strip().encode('utf-8'))
+						if nb_infos == 1:
+							infos.append(a.get_text().strip().encode('utf-8'))
+						if nb_infos == 3:
+							infos.append(a.get_text().strip().encode('utf-8'))	
+						if nb_infos == 4:
+							infos.append(a.get_text().strip().encode('utf-8'))
+						if nb_infos == 7:
+							infos.append(a.get_text().strip().encode('utf-8'))
+						if nb_infos == 8:
+							infos.append(a.get_text().strip().encode('utf-8'))
+						if nb_infos == 10:
+							infos.append(a.get_text().strip().encode('utf-8'))
+						if nb_infos == 11:
+							infos.append(a.get_text().strip().encode('utf-8'))
+						nb_infos +=1
+						
+					print infos[0], infos[2]
+					print infos[1], infos[3]
+					print infos[4], infos[6]
+					print infos[5], infos[7]
+						
+				### RECUPERER LES INFOS DU CURSUS
+				if nb == 1:
+					print 'table 2 : infos sur le cursus et la langue'
+					for a,b in enumerate(table.find_all('tr')):
+						if a == 1:
+							cours = b.text.strip().split(':')[0]
+							print(cours)
+						
+				### RECUPERER LES INFOS SUR LES FORMATEURS
+				if nb == 2:
+					print 'table 3 : Infos sur les formateurs'
+						
+				### RECUPERER LES INFOS SUR LES STAGIAIRES
+				if nb == 3:
+					nb_stag = 0
+					stag = {}
+					print 'table 4 :Infos sur les stagiaires'
+					# print table
+					### Récupérer l'id de la session pour les colonnes
+					id = table.find('th', { 'class': "col-2"})
+					pref_id = id['id'].split("_")[0]
+					### déterminer les colonnes à récupérer
+					_prenom = pref_id + '_col-2'
+					_nom = pref_id + '_col-3'
+					_login = pref_id + '_col-4'
+					_mail = pref_id + '_col-5'
+					_last_login = pref_id + '_col-6'
+						
+					### CREER LE FICHIER ET AJOUTER LES INFOS D'ENTETE
+					file = 'classe_' + infos[2].replace(' ','_') + '.txt'
+					f = open( './classes/' + file, 'w')
+					f.write('Cursus : ' + cours + '\n')
+					f.write('Nom de la classe : ' + infos[2] + '\n')
+					f.write('ID de la classe : ' + infos[3] + '\n')
+					f.write('Date de début : ' + infos[6] + '\n')
+					f.write('Date de fin : ' + infos[7] + '\n')
+					f.write('\nNom;Prénom;login;mail;last login\n')
+						
+					### Récupérer les infos stagiaires
+					nb_stag = 0
+					for a in table.find_all('tr'):
+						for b in a.find_all('td' , {'headers' : _prenom }):
+							prenom = b.text.strip().encode('utf-8')
+						for b in a.find_all('td' , {'headers' : _nom }):
+							nom =  b.text.strip().encode('utf-8')
+						for b in a.find_all('td' , {'headers' : _login }):
+							login = b.text.strip().encode('utf-8')
+						for b in a.find_all('td' , {'headers' : _mail }):
+							mail =  b.text.strip().encode('utf-8')
+							nb_stag +=1
+						for b in a.find_all('td' , {'headers' : _last_login }):
+							last_login = b.text.strip().encode('utf-8')
+							line = nom+';'+prenom+';'+login+';'+mail+';'+last_login+';'
+							print line
+							f.write(line + '\n')
+					f.close()
+
+					print 'stagiaires :' , nb_stag
+						
+				nb +=1
+
+
+def getManageClasse(br):
+	"""
+	Aller sur la page d'administration d'une classe
+	"""
+	resp = br.open('https://1336773.netacad.com/courses/30329/')
+	print br.title()
+	#print br.response().read()
+	#br.retrieve('https://1336773.netacad.com/courses/30329/gradebook.csv','fic.csv')[0]
+	"""
+	url = 'https://1336773.netacad.com/courses/34582'
+	br.follow_link('Link(url=url)')
+	print br.response().read()
+	"""
+	"""
+	for link in br.links():
+		if r"35800" in link.url:
+			print link
+	"""
+			#resp = br.follow_link(link)
+			#print br.response().read()
+	
+			#print link.base_url
+			#print link.url
+			# resp = br.follow_link(link)
+			# print br.title()
+
+	# br.open('https://www.netacad.com/c/portal/saml/sso?entityId=http://1336773.netacad.com/saml2&RelayState=/courses/36308')
+	# print br.title()
+	
+	## voir http://www.pythonforbeginners.com/cheatsheet/python-mechanize-cheat-sheet/
+	
+	## MAIS COMMENT OUVRIR UNE BETE PAGE ????
+	"""
+	r = br.open('https://1336773.netacad.com/courses/35800')
+	print br.response().read()
+	print br.response().info()
+	print br.geturl()
+	#br.retrieve('https://1336773.netacad.com/courses/35800/gradebook.csv', 'gradeboock.csv')[-1]
+	"""
+
+def createUsersList():
+	### CREER LA LISTE DE TOUS LES STAGIAIRES
+	### A FAIRE : UNE BLACKLIST
+	f = 'listeUsers.txt'
+	liste_stags = []
+	for a in os.listdir('./classes'): 
+		f = open('./classes/' + a)
+		for a in f.readlines():
+			if 'Nom de la classe' in a:
+				classe = a.split(':')[1].strip()
+			if '@' in a:
+				stag = a.strip()
+				liste_stags.append(stag)
+		f.close()
+	## Supprimer les doublons de ligne
+	l = list(set(liste_stags))
+	# l.sort()
+
+	### AJOUTER LEURS CLASSES AUX STAGIAIRES
+	## Pour chacune des classes
+	listeStags = []
+	for a in os.listdir('./classes'):
+		## a : liste des fichiers de classe
+		f = open('./classes/' + a)
+		file = f.read()
+		fic = file.split('\n')[1].split(': ')[1]
+		## A chaque fois que l'email d'un stagiaire est trouvée dans
+		## un fichier, on ajoute le nom de la classe pour le stagiaire
+		for i,stag in enumerate(l):
+			mail =  stag.split(';')[3]
+			if mail in file:
+				l[i] = stag + fic + ','
+		f.close()
+	
+	## Trier la liste des stagiaires
+	l.sort()
+	## Créer le fichier de la liste des stagiaires
+	f = open('liste_stagiaires', 'w')
+	## Ecrire chaque entrée de stagiaire
+	for a in l:
+		f.write(a + '\n')
+	f.close
+
+	print 'Nombre de stagaires : ',len(l)
+	
+
+if __name__ == "__main__" :
+	manageFiles()
+	br = createInstance()
+	connect2netacad(br)
+	# listeClasses = getListeClasses(br)
+	getInfosClasse(br)
+	# getManageClasse(br)
+	br.close()
+	createUsersList()

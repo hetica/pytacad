@@ -1,0 +1,17 @@
+Liste mal foutue et incomplète des fonctionalités manquantes ou à améliorer, des trucs qui marchent mal ou pas complètement. Bref, tous les trucs qui seront peut-être réalisés un jour.
+
+#### A FAIRE SUR PYTACAD SERVER ###########
+- Tenir compte du fait que deux classes peuvent avoir le même nom !!!!! (référencer les classes par leur N° ?)
+- Les classes renommées ne sont pas supprimées
+- L'affichage des classes affiche mal les dates
+	exemple : pour la classe CP_201309N_CCNA1, la date de début est 09/23/2013 (elle devrait être 23/09/2013)
+- Faire une blacklist des stagiaires à ne pas afficher (stagiaires de test, formateurs ...)
+
+#### A FAIRE SUR PYTACAD CLIENT ########
+- voir s'il est possible de faire des fichiers des classes en les formatant pour un tableur
+- internationaliser le programe
+
+#### A FAIRE POUR LES DEUX, SERVER ET CLIENT ####
+- Faire un programme d'installation
+- créer un paquet debian
+

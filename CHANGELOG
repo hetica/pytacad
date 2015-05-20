@@ -1,0 +1,36 @@
+
+Version 0.4
+Le 20/05/2015
+Le site netacad.com à subit des modifications, empêchant le programme de fonctionner
+- modification des formulaires login/mdp
+- modification du code permettant de télécharger les informations sur les stagiaires
+- fichier séparé pour stocker les identifiants login/mdp, pour utiliser gitHub
+___________________________________________________________________________________________________________
+
+Version 0.3
+Le 02/05/2014
+- une mise à jour du module "bs4" fait planter le programme, "bs4" est remplacé par "BeautifulSoup"
+___________________________________________________________________________________________________________
+
+Version 0.2
+Le 29/08/2013
+- Amélioré l'ergonomie du client pytacad-client.py
+___________________________________________________________________________________________________________
+
+Version 0.1.1
+Le 10/10/2013
+Le site netacad.com à subit des modifications, empêchant le programme de fonctionner
+- modification du code permettant de télécharger les informations sur les stagiaires
+___________________________________________________________________________________________________________
+
+Version 0.1
+le 08/06/2013
+Fonctionalité :
+pytacad-server
+- créé un fichier par classe de l'académie, contenant les caractéristiques de la classe et la liste des stagiaires
+- créé un fichier contenant la liste de tous les stagiaires de l'académie, avec les classes sur lesquelles ils sont inscrits.
+pytacad-client
+- chercher un ou des stagiaires par mot-clé (insensible à la casse et aux accents)
+- chercher une ou des classes et tous leur stagiaires
+- mettre à jour la base de données (exécute pytacad-server)
+- affiche des infos générales (nombre de stagiaires, de classes)
