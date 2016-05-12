@@ -1,3 +1,14 @@
+12/05/2016
+Plus de mise à jour depuis le site
+CAUSE
+ Modification de la page d'accueil de netcad.com.
+ Un formulaire à été ajouté
+ L'appli web veut utiliser ce formulaire, qui n'est pas celui de connection
+ La connexion échoue
+RESOLUTION
+ dans le fichier pytacad-server.py - ligne 110 :
+ "br.select_form(nr=1)"	# au lieu de nr=0
+_____________________________________________________________________________________
 12/05/2015
 Plus de mises à jour depuis le site 
 CAUSE

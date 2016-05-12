@@ -20,7 +20,7 @@ HTTP Error 406 Not acceptable
 	http://www.checkupdown.com/status/E406.html
 """
 __appname__ = 'pytacad'
-__version__ = "0.4"
+__version__ = "0.5"
 __author__ = "Benoit Guibert <benoit.guibert@free.fr>"
 __licence__ = "LGPL"
 
@@ -107,7 +107,7 @@ def connect2netacad(br):
 	print br.title()
 
 	## Select the first (index zero) form
-	br.select_form(nr=0)
+	br.select_form(nr=1)
 
 	## User credentials
 	br.form['_58_INSTANCE_fm_login'] = user
